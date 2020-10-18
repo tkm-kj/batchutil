@@ -1,2 +1,1 @@
-# cncrutil
-concurrent util in go
+# batchutil
