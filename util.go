@@ -1,6 +1,10 @@
 package batchutil
 
-import "sync"
+import (
+	"sync"
+
+	multierror "github.com/hashicorp/go-multierror"
+)
 
 type Util struct {
 	config *Config
@@ -23,6 +27,7 @@ func (util *Util) Run(f func(min, max int64) error) error {
 
 	var wg sync.WaitGroup
 	slots := make(chan struct{}, util.config.concurrentNumber())
+	var result error
 
 	startNum, endNum, batchSize := util.config.StartNumber, util.config.EndNumber, util.config.BatchSize
 
@@ -34,7 +39,7 @@ func (util *Util) Run(f func(min, max int64) error) error {
 			defer wg.Done()
 			err := f(min, max)
 			if err != nil {
-				// TODO: error handling
+				result = multierror.Append(result, err)
 			}
 			<-slots
 		}(i, i+batchSize)
@@ -42,5 +47,5 @@ func (util *Util) Run(f func(min, max int64) error) error {
 
 	wg.Wait()
 
-	return nil
+	return result
 }
