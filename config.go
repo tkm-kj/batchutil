@@ -3,17 +3,17 @@ package batchutil
 import "errors"
 
 type Config struct {
-	ConcurrentNumber int
-	StartNumber      int64
-	EndNumber        int64
-	BatchSize        int64
+	ConcurrentLimit int
+	StartNumber     int64
+	EndNumber       int64
+	BatchSize       int64
 }
 
-func (config *Config) concurrentNumber() int {
-	if config.ConcurrentNumber == 0 {
+func (config *Config) concurrentLimit() int {
+	if config.ConcurrentLimit == 0 {
 		return 1
 	}
-	return config.ConcurrentNumber
+	return config.ConcurrentLimit
 }
 
 func (config *Config) validate() error {

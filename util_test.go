@@ -12,10 +12,10 @@ import (
 
 func TestConfigUtilRun(t *testing.T) {
 	config := &Config{
-		ConcurrentNumber: 100,
-		StartNumber:      1,
-		EndNumber:        1450,
-		BatchSize:        100,
+		ConcurrentLimit: 100,
+		StartNumber:     1,
+		EndNumber:       1450,
+		BatchSize:       100,
 	}
 	util := Open(config)
 	f := func(min, max int64) error {
