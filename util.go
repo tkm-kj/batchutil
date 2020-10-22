@@ -27,6 +27,8 @@ func (util *Util) Run(f func(min, max int64) error) error {
 
 	var wg sync.WaitGroup
 	slots := make(chan struct{}, util.config.concurrentLimit())
+	defer close(slots)
+
 	var result error
 
 	startNum, endNum, batchSize := util.config.StartNumber, util.config.EndNumber, util.config.BatchSize
