@@ -1,5 +1,7 @@
 # batchutil
 
+![Go](https://github.com/tkm-kj/batchutil/workflows/Go/badge.svg)
+
 `batchutil` is a package for Go that provides functions to describe a concurrent batch processing easily.
 If you just set configurations and a function, you can run a concurrent program.
 It's very useful when you write a big batch processing like data migrations.
