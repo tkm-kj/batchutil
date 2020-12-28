@@ -62,7 +62,7 @@ Batch processing runs concurrently!
 ### Run batch processing with context
 
 Also, you can use batchutil with `context.Context` too.
-In other words, you can just stop batch process when an error occurs.
+In other words, you can just skip batch process when an error occurs.
 
 ```go
 util := batchutil.NewUtil(cfg)
