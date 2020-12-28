@@ -1,9 +1,11 @@
 package batchutil
 
 import (
+	"context"
 	"sync"
 
 	multierror "github.com/hashicorp/go-multierror"
+	"golang.org/x/sync/errgroup"
 )
 
 type Util struct {
@@ -50,4 +52,33 @@ func (util *Util) Run(f func(min, max int64) error) error {
 	wg.Wait()
 
 	return result
+}
+
+func (util *Util) RunWithContext(ctx context.Context, f func(ctx context.Context, min, max int64) error) error {
+	err := util.config.validate()
+	if err != nil {
+		return err
+	}
+
+	eg, newCtx := errgroup.WithContext(ctx)
+
+	slots := make(chan struct{}, util.config.concurrentLimit())
+	defer close(slots)
+
+	startNum, endNum, batchSize := util.config.StartNumber, util.config.EndNumber, util.config.BatchSize
+	for i := startNum; i <= endNum; i += batchSize {
+		slots <- struct{}{}
+
+		i := i
+		eg.Go(func() error {
+			err := f(newCtx, i, i+batchSize)
+			<-slots
+			return err
+		})
+	}
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
+	return nil
 }
