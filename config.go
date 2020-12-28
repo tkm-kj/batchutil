@@ -3,29 +3,35 @@ package batchutil
 import "errors"
 
 type Config struct {
-	ConcurrentLimit int
-	StartNumber     int64
-	EndNumber       int64
-	BatchSize       int64
+	concurrentLimit int
+	startNumber     int64
+	endNumber       int64
+	batchSize       int64
 }
 
-func (config *Config) concurrentLimit() int {
-	if config.ConcurrentLimit == 0 {
-		return 1
+func NewConfig(
+	concurrentLimit int,
+	startNumber int64,
+	endNumber int64,
+	batchSize int64,
+) (*Config, error) {
+	if concurrentLimit == 0 {
+		return nil, errors.New("batchutil: concurrentLimit is zero")
 	}
-	return config.ConcurrentLimit
-}
+	if startNumber == 0 {
+		return nil, errors.New("batchutil: startNumber is zero")
+	}
+	if endNumber == 0 {
+		return nil, errors.New("batchutil: endNumber is zero")
+	}
+	if batchSize == 0 {
+		return nil, errors.New("batchutil: batchSize is zero")
+	}
 
-func (config *Config) validate() error {
-	if config.StartNumber == 0 {
-		return errors.New("batchutil: StartNumber is zero")
-	}
-	if config.EndNumber == 0 {
-		return errors.New("batchutil: EndNumber is zero")
-	}
-	if config.BatchSize == 0 {
-		return errors.New("batchutil: BatchSize is zero")
-	}
-
-	return nil
+	return &Config{
+		concurrentLimit: concurrentLimit,
+		startNumber:     startNumber,
+		endNumber:       endNumber,
+		batchSize:       batchSize,
+	}, nil
 }

@@ -15,20 +15,20 @@ Install using `go get github.com/tkm-kj/batchutil`.
 ### Define configuration
 
 ```go
-cfg := batchutil.Config{
-    ConcurrentLimit: 100,  // limit value of concurrency(It's assuming database max connection)
-    StartNumber:     1,    // loop start number
-    EndNumber:       1450, // loop end number
-    BatchSize:       100,  // the size of batch(StartNumber is incremented by BatchSize until it exceeds EndNumber)
-}
+cfg := batchutil.NewConfig(
+    3,  // [concurrentLimit] limit value of concurrency(It's assuming database max connection)
+    1,    // [startNumber] loop start number
+    1450, // [endNumber] loop end number
+    100,  // [batchSize] the size of batch(StartNumber is incremented by BatchSize until it exceeds EndNumber)
+)
 ```
 
-When you set `1` to `ConcurrentLimit` or nothing, batch processing runs serially.
+When you set `1` to `ConcurrentLimit`, batch processing runs serially.
 
 ### Run batch processing
 
 ```go
-util := batchutil.Open(&cfg)
+util := batchutil.NewUtil(cfg)
 f := func(min, max int64) error {
     log.Printf("min: %d, max: %d", min, max)
     // I assume that you'll find list by `min` and `max` and do something
@@ -58,3 +58,33 @@ The result is below.
 ```
 
 Batch processing runs concurrently!
+
+### Run batch processing with context
+
+Also, you can use batchutil with `context.Context` too.
+In other words, you can just stop batch process when an error occurs.
+
+```go
+util := batchutil.NewUtil(cfg)
+f := func(ctx context.Context, min, max int64) error {
+    select {
+    case <-ctx.Done():
+        return ctx.Err()
+    default:
+    }
+
+    if min == 101 {
+        return errors.New("error")
+    }
+    log.Printf("min: %d, max: %d", min, max)
+    return nil
+}
+err := util.RunWithContext(context.Background(), f)
+```
+
+The result is below.
+
+```
+2020/12/29 00:07:33 min: 201, max: 301
+2020/12/29 00:07:33 min: 1, max: 101
+```

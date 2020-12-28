@@ -1,52 +1,13 @@
-package batchutil
+package batchutil_test
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/tkm-kj/batchutil"
 )
 
-func TestConfig_concurrentLimit(t *testing.T) {
-	type fields struct {
-		ConcurrentLimit int
-		StartNumber     int64
-		EndNumber       int64
-		BatchSize       int64
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   int
-	}{
-		{
-			name: "ConcurrentLimit is zero",
-			fields: fields{
-				ConcurrentLimit: 0,
-			},
-			want: 1,
-		},
-		{
-			name: "ConcurrentLimit isn't zero",
-			fields: fields{
-				ConcurrentLimit: 1000,
-			},
-			want: 1000,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			config := &Config{
-				ConcurrentLimit: tt.fields.ConcurrentLimit,
-				StartNumber:     tt.fields.StartNumber,
-				EndNumber:       tt.fields.EndNumber,
-				BatchSize:       tt.fields.BatchSize,
-			}
-			if got := config.concurrentLimit(); got != tt.want {
-				t.Errorf("Config.concurrentLimit() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestConfig_validate(t *testing.T) {
+func TestConfig_NewConfig(t *testing.T) {
 	type fields struct {
 		ConcurrentLimit int
 		StartNumber     int64
@@ -69,7 +30,16 @@ func TestConfig_validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "StartNumber is zero",
+			name: "concurrentLimit is zero",
+			fields: fields{
+				StartNumber: 1,
+				EndNumber:   1450,
+				BatchSize:   100,
+			},
+			wantErr: true,
+		},
+		{
+			name: "startNumber is zero",
 			fields: fields{
 				ConcurrentLimit: 100,
 				EndNumber:       1450,
@@ -78,7 +48,7 @@ func TestConfig_validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "EndNumber is zero",
+			name: "endNumber is zero",
 			fields: fields{
 				ConcurrentLimit: 100,
 				StartNumber:     1,
@@ -87,7 +57,7 @@ func TestConfig_validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "BatchSize is zero",
+			name: "batchSize is zero",
 			fields: fields{
 				ConcurrentLimit: 100,
 				StartNumber:     1,
@@ -98,14 +68,16 @@ func TestConfig_validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			config := &Config{
-				ConcurrentLimit: tt.fields.ConcurrentLimit,
-				StartNumber:     tt.fields.StartNumber,
-				EndNumber:       tt.fields.EndNumber,
-				BatchSize:       tt.fields.BatchSize,
-			}
-			if err := config.validate(); (err != nil) != tt.wantErr {
-				t.Errorf("Config.validate() error = %v, wantErr %v", err, tt.wantErr)
+			_, err := batchutil.NewConfig(
+				tt.fields.ConcurrentLimit,
+				tt.fields.StartNumber,
+				tt.fields.EndNumber,
+				tt.fields.BatchSize,
+			)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
